@@ -1,0 +1,29 @@
+{
+  "entities": {
+    "AppConfig": {
+      "title": "Application Configuration",
+      "description": "Holds the main site title and the list of dynamic buttons.",
+      "type": "object",
+      "properties": {
+        "siteTitle": {
+          "type": "string",
+          "description": "The title of the website."
+        },
+        "buttons": {
+          "type": "array",
+          "description": "The list of button configurations.",
+          "items": { "type": "object" }
+        }
+      },
+      "required": ["buttons"]
+    }
+  },
+  "firestore": {
+    "site_config/{configId}": {
+      "schema": {
+        "$ref": "#/entities/AppConfig"
+      },
+      "description": "Stores the application's configuration like the button list and title."
+    }
+  }
+}

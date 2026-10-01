@@ -1,0 +1,199 @@
+import { AppConfig } from "../types";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "./firebaseService";
+
+// The configuration provided by the user
+const DEFAULT_CONFIG: AppConfig = {
+  "siteTitle": "",
+  "buttons": [
+    {
+      "id": "877ad3e8-5c0a-49bc-852e-40804900f137",
+      "name": "Monopoly Anywhere",
+      "url": "https://monopoly-anywhere.ai.studio/",
+      "description": "This is a Monopoly Anywhere game, you can pretty mych pick any city to play on.",
+      "className": "flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg hover:shadow-red-500/30 border-b-4 border-red-800 hover:border-red-700 uppercase tracking-widest",
+      "iconName": "globe",
+      "category": "Games"
+    },
+    {
+      "id": "d17c4a5d-c9d2-4095-89a0-3f67a250b2f6",
+      "name": "Geography about Turkiye, USA and Poland",
+      "url": "https://turkey-explorer-quiz-656707491288.us-west1.run.app/",
+      "description": "Try to learn and explore geography on Turkiye, USA and Poland. game for kids",
+      "className": "flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-2xl shadow-[0_4px_0_rgb(4,120,87)] hover:shadow-[0_2px_0_rgb(4,120,87)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none border-2 border-emerald-300/30 text-xl",
+      "iconName": "globe",
+      "category": "Games"
+    },
+    {
+      "id": "f725bbe2-7454-4e67-9fe9-e72f7de9bc33",
+      "name": "Tesla Analyzer",
+      "url": "https://teslasrq.org/",
+      "description": "If you are are using TeslaFi and want to know more about your car more in detail use this app",
+      "className": "flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 px-6 py-3 rounded-full bg-slate-950 text-white font-semibold hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-500/30 border border-slate-700/50 shadow-lg",
+      "iconName": "gauge",
+      "category": "Tesla"
+    },
+    {
+      "id": "873decb8-54aa-4fa1-9213-830594436d75",
+      "name": "Drone Planet",
+      "url": "https://www.droneplanet.us",
+      "description": "This is a Drone Planet website",
+      "className": "px-8 py-3 rounded-md bg-slate-900 text-cyan-400 border border-cyan-500/30 font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(34,211,238,0.2)] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)] hover:border-cyan-400 flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95",
+      "iconName": "navigation",
+      "category": "Drones"
+    },
+    {
+      "id": "8eb4e140-2548-4a54-95c7-81cb35f0b14e",
+      "name": "DJI Flight Log Viewer",
+      "url": "https://dji-flight-data-viewer-626016522927.us-west1.run.app/",
+      "description": "Load up your DJI logs and get amazing dashboards",
+      "className": "flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+      "iconName": "layout-dashboard",
+      "category": "Drones"
+    },
+    {
+      "id": "0cfd143b-5b2e-4996-aad3-1555122bb091",
+      "name": "Drone Pre-Flight Checklist",
+      "url": "https://droneplanet.vercel.app/",
+      "description": "Before you fly your drone, stay compliant and fill out the short checklist, photograph your drone and save the pdf before every flight.",
+      "className": "px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 border border-blue-400/50 flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95",
+      "iconName": "clipboard-check",
+      "category": "Drones"
+    },
+    {
+      "id": "3f8e9d2c-1a4b-5c6d-7e8f-9a0b1c2d3e4f",
+      "name": "Global Wingman - Drone Pilot Network",
+      "url": "https://globalwingman.org/",
+      "description": "Connect with drone pilots globally.",
+      "className": "flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded-xl shadow-lg hover:shadow-amber-500/20 border border-amber-500/30 focus:outline-none focus:ring-2 focus:ring-amber-500",
+      "iconName": "users",
+      "category": "Drones"
+    },
+    {
+      "id": "0acc240b-02ec-483a-a795-f9a08cfcac59",
+      "name": "Snake Scan",
+      "url": "https://snakescan.com/",
+      "description": "Scan any snake or animal to find out more about if it is poisonos or not",
+      "className": "flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl shadow-xl hover:shadow-emerald-200/50 border-b-4 border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500",
+      "iconName": "scan-search",
+      "category": "Wildlife"
+    }
+  ]
+};
+
+const STORAGE_KEY = 'site_config';
+
+const normalizeConfig = (config: AppConfig): AppConfig => {
+  if (!config || !config.buttons) return config;
+  let hasChanges = false;
+  const updatedButtons = config.buttons.map(btn => {
+    if (
+      btn.id === '877ad3e8-5c0a-49bc-852e-40804900f137' ||
+      btn.name.toLowerCase().includes('monopoly') ||
+      btn.url.includes('monopoly-anywhere')
+    ) {
+      if (btn.url !== 'https://monopoly-anywhere.ai.studio/') {
+        hasChanges = true;
+        return {
+          ...btn,
+          url: 'https://monopoly-anywhere.ai.studio/'
+        };
+      }
+    }
+    if (
+      btn.id === '3f8e9d2c-1a4b-5c6d-7e8f-9a0b1c2d3e4f' ||
+      btn.name.toLowerCase().includes('global wingman') ||
+      btn.url.includes('global-wingman-139184139920')
+    ) {
+      if (btn.url !== 'https://globalwingman.org/') {
+        hasChanges = true;
+        return {
+          ...btn,
+          url: 'https://globalwingman.org/'
+        };
+      }
+    }
+    return btn;
+  });
+
+  return hasChanges ? { ...config, buttons: updatedButtons } : config;
+};
+
+export const loadConfig = async (): Promise<AppConfig> => {
+  try {
+    const docRef = doc(db, 'site_config', 'global');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const parsedConfig = docSnap.data() as AppConfig;
+      if (parsedConfig && parsedConfig.buttons) {
+          return normalizeConfig(parsedConfig);
+      }
+    } else {
+      // Fallback to localStorage just to gracefully migrate existing users if needed, 
+      // though Firestore is the source of truth now.
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsedConfig = JSON.parse(saved) as AppConfig;
+        if (parsedConfig && parsedConfig.buttons) {
+            const normalized = normalizeConfig(parsedConfig);
+            // Save migrated data to firestore
+            await saveToLocalStorage(normalized);
+            return normalized;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Failed to load config from storage:", error);
+  }
+  return DEFAULT_CONFIG;
+};
+
+export const saveToLocalStorage = async (config: AppConfig) => {
+  try {
+    // Keep local storage synced for fallback
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    
+    const docRef = doc(db, 'site_config', 'global');
+    await setDoc(docRef, config);
+  } catch (error) {
+    console.error("Failed to save config to storage:", error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes("Missing or insufficient permissions")) {
+         alert("Not authorized to save configuration. You must be the admin on record.");
+      }
+    }
+  }
+};
+
+export const downloadConfigJSON = (config: AppConfig) => {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
+  const downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute("download", "config.json");
+  document.body.appendChild(downloadAnchorNode); // required for firefox
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
+};
+
+export const importConfigJSON = async (file: File): Promise<AppConfig> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        if (!event.target?.result) throw new Error("File is empty");
+        const json = JSON.parse(event.target.result as string) as AppConfig;
+        
+        if (!json.buttons || !Array.isArray(json.buttons)) {
+          throw new Error("Invalid config format: 'buttons' array is missing");
+        }
+        
+        resolve(json);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsText(file);
+  });
+};

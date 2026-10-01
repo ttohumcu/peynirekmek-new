@@ -1,0 +1,5 @@
+{
+  "name": "PeynirEkmek.com Dashboard",
+  "description": "A dynamic landing page where you can create custom-styled buttons using AI descriptions, with file-based persistence and a hidden admin interface.",
+  "requestFramePermissions": []
+}

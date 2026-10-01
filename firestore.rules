@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isAdmin() {
+      // Hardcoded admin for personal project
+      return request.auth != null && 
+             request.auth.token.email == 'ttohumcu@gmail.com' && 
+             request.auth.token.email_verified == true;
+    }
+
+    match /site_config/{configId} {
+      // Anyone can read the config to see the links
+      allow read: if true;
+      
+      // Only the specific admin can create, update, or delete the config
+      allow write: if isAdmin();
+    }
+  }
+}

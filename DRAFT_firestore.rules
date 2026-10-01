@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'teslasrq@gmail.com' && request.auth.token.email_verified == true;
+    }
+
+    match /site_config/{configId} {
+      // Anyone can read the config to see the links
+      allow read: if true;
+      // Only the specific admin can create or update the config
+      allow write: if isAdmin();
+    }
+  }
+}
