@@ -1,7 +1,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { GeminiStyleResponse } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// The site is static (GitHub Pages), so the Gemini key is never bundled.
+// The admin enters it once and it stays in this browser's localStorage.
+const KEY_STORAGE = "gemini_api_key";
+
+const getApiKey = (): string | null => {
+  let key = localStorage.getItem(KEY_STORAGE);
+  if (!key) {
+    key = window.prompt("Enter your Gemini API key (stored only in this browser):")?.trim() || null;
+    if (key) localStorage.setItem(KEY_STORAGE, key);
+  }
+  return key;
+};
 
 export const generateButtonStyle = async (description: string): Promise<GeminiStyleResponse> => {
   const modelId = "gemini-3-flash-preview";
@@ -21,6 +32,9 @@ export const generateButtonStyle = async (description: string): Promise<GeminiSt
   `;
 
   try {
+    const apiKey = getApiKey();
+    if (!apiKey) throw new Error("No Gemini API key provided");
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: modelId,
       contents: `Description: ${description}`,
