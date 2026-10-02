@@ -15,8 +15,3 @@ export interface AppConfig {
   siteTitle: string;
   buttons: ButtonConfig[];
 }
-
-export interface GeminiStyleResponse {
-  className: string;
-  icon: string;
-}

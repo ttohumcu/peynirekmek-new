@@ -1,25 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Loader2, Settings } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { AppConfig, ButtonConfig } from './types';
-import { loadConfig, saveToLocalStorage } from './services/fileService';
 import DynamicButton from './components/DynamicButton';
-import AdminPanel from './components/AdminPanel';
+import siteConfig from './config.json';
+
+// Buttons live in config.json; edit that file and push to update the site.
+const config: AppConfig = siteConfig;
 
 function App() {
-  const [config, setConfig] = useState<AppConfig>({ siteTitle: '', buttons: [] });
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-
-  // Initialize Data
-  useEffect(() => {
-    const fetchConfig = async () => {
-      setIsLoading(true);
-      const loadedConfig = await loadConfig();
-      setConfig(loadedConfig);
-      setIsLoading(false);
-    };
-    fetchConfig();
-  }, []);
 
   // Group buttons by category
   const categories = useMemo(() => {
@@ -51,21 +38,6 @@ function App() {
     }
   });
   if (categories['Other']) finalOrder.push('Other');
-
-  // Sync config changes back to local storage
-  const handleConfigChange = (newConfig: AppConfig) => {
-    setConfig(newConfig);
-    saveToLocalStorage(newConfig);
-  };
-
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <Loader2 className="animate-spin text-purple-500" size={48} />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
@@ -111,28 +83,8 @@ function App() {
         <div className="text-slate-600 text-xs">
           © 2026 PeynirEkmek.com
         </div>
-        <button 
-          onClick={() => setIsAdminOpen(true)}
-          className="text-slate-700 hover:text-slate-400 p-2 transition-colors rounded-full hover:bg-slate-800/50"
-          title="Open Admin Panel"
-        >
-          <Settings size={16} />
-        </button>
       </footer>
 
-      {isAdminOpen && (
-        <AdminPanel 
-          config={config} 
-          setConfig={handleConfigChange} 
-          onClose={() => setIsAdminOpen(false)} 
-          onResetToPublished={async () => {
-             // Let's clear localStorage and reload default
-             localStorage.removeItem('site_config');
-             const loadedConfig = await loadConfig();
-             setConfig(loadedConfig);
-          }}
-        />
-      )}
     </div>
   );
 }

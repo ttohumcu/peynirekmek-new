@@ -1,9 +1,4 @@
-import { AppConfig } from "../types";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "./firebaseService";
-
-// The configuration provided by the user
-const DEFAULT_CONFIG: AppConfig = {
+{
   "siteTitle": "",
   "buttons": [
     {
@@ -27,7 +22,7 @@ const DEFAULT_CONFIG: AppConfig = {
     {
       "id": "f725bbe2-7454-4e67-9fe9-e72f7de9bc33",
       "name": "Tesla Analyzer",
-      "url": "https://teslasrq.org/",
+      "url": "https://www.teslasrq.org/",
       "description": "If you are are using TeslaFi and want to know more about your car more in detail use this app",
       "className": "flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 px-6 py-3 rounded-full bg-slate-950 text-white font-semibold hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-500/30 border border-slate-700/50 shadow-lg",
       "iconName": "gauge",
@@ -45,7 +40,7 @@ const DEFAULT_CONFIG: AppConfig = {
     {
       "id": "8eb4e140-2548-4a54-95c7-81cb35f0b14e",
       "name": "DJI Flight Log Viewer",
-      "url": "https://dji-flight-data-viewer-626016522927.us-west1.run.app/",
+      "url": "https://dji-flight-viewer.vercel.app/",
       "description": "Load up your DJI logs and get amazing dashboards",
       "className": "flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
       "iconName": "layout-dashboard",
@@ -77,123 +72,15 @@ const DEFAULT_CONFIG: AppConfig = {
       "className": "flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl shadow-xl hover:shadow-emerald-200/50 border-b-4 border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500",
       "iconName": "scan-search",
       "category": "Wildlife"
+    },
+    {
+      "id": "a6a9e6a2-3650-4f0f-a259-7bb8de950e25",
+      "name": "DRONE PLANET GLOBAL",
+      "url": "http://www.droneplanet.us",
+      "description": "Drone Planet Global",
+      "className": "bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-300",
+      "iconName": "link",
+      "category": "Drones"
     }
   ]
-};
-
-const STORAGE_KEY = 'site_config';
-
-const normalizeConfig = (config: AppConfig): AppConfig => {
-  if (!config || !config.buttons) return config;
-  let hasChanges = false;
-  const updatedButtons = config.buttons.map(btn => {
-    if (
-      btn.id === '877ad3e8-5c0a-49bc-852e-40804900f137' ||
-      btn.name.toLowerCase().includes('monopoly') ||
-      btn.url.includes('monopoly-anywhere')
-    ) {
-      if (btn.url !== 'https://monopoly-anywhere.ai.studio/') {
-        hasChanges = true;
-        return {
-          ...btn,
-          url: 'https://monopoly-anywhere.ai.studio/'
-        };
-      }
-    }
-    if (
-      btn.id === '3f8e9d2c-1a4b-5c6d-7e8f-9a0b1c2d3e4f' ||
-      btn.name.toLowerCase().includes('global wingman') ||
-      btn.url.includes('global-wingman-139184139920')
-    ) {
-      if (btn.url !== 'https://globalwingman.org/') {
-        hasChanges = true;
-        return {
-          ...btn,
-          url: 'https://globalwingman.org/'
-        };
-      }
-    }
-    return btn;
-  });
-
-  return hasChanges ? { ...config, buttons: updatedButtons } : config;
-};
-
-export const loadConfig = async (): Promise<AppConfig> => {
-  try {
-    const docRef = doc(db, 'site_config', 'global');
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const parsedConfig = docSnap.data() as AppConfig;
-      if (parsedConfig && parsedConfig.buttons) {
-          return normalizeConfig(parsedConfig);
-      }
-    } else {
-      // Fallback to localStorage just to gracefully migrate existing users if needed, 
-      // though Firestore is the source of truth now.
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsedConfig = JSON.parse(saved) as AppConfig;
-        if (parsedConfig && parsedConfig.buttons) {
-            const normalized = normalizeConfig(parsedConfig);
-            // Save migrated data to firestore
-            await saveToLocalStorage(normalized);
-            return normalized;
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Failed to load config from storage:", error);
-  }
-  return DEFAULT_CONFIG;
-};
-
-export const saveToLocalStorage = async (config: AppConfig) => {
-  try {
-    // Keep local storage synced for fallback
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-    
-    const docRef = doc(db, 'site_config', 'global');
-    await setDoc(docRef, config);
-  } catch (error) {
-    console.error("Failed to save config to storage:", error);
-    
-    if (error instanceof Error) {
-      if (error.message.includes("Missing or insufficient permissions")) {
-         alert("Not authorized to save configuration. You must be the admin on record.");
-      }
-    }
-  }
-};
-
-export const downloadConfigJSON = (config: AppConfig) => {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
-  const downloadAnchorNode = document.createElement('a');
-  downloadAnchorNode.setAttribute("href", dataStr);
-  downloadAnchorNode.setAttribute("download", "config.json");
-  document.body.appendChild(downloadAnchorNode); // required for firefox
-  downloadAnchorNode.click();
-  downloadAnchorNode.remove();
-};
-
-export const importConfigJSON = async (file: File): Promise<AppConfig> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        if (!event.target?.result) throw new Error("File is empty");
-        const json = JSON.parse(event.target.result as string) as AppConfig;
-        
-        if (!json.buttons || !Array.isArray(json.buttons)) {
-          throw new Error("Invalid config format: 'buttons' array is missing");
-        }
-        
-        resolve(json);
-      } catch (error) {
-        reject(error);
-      }
-    };
-    reader.onerror = (error) => reject(error);
-    reader.readAsText(file);
-  });
-};
+}
