@@ -76,7 +76,7 @@
     {
       "id": "a6a9e6a2-3650-4f0f-a259-7bb8de950e25",
       "name": "DRONE PLANET GLOBAL",
-      "url": "http://www.droneplanet.us",
+      "url": "https://www.droneplanet.us",
       "description": "Drone Planet Global",
       "className": "bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-300",
       "iconName": "link",
