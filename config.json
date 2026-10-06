@@ -48,8 +48,8 @@
     },
     {
       "id": "0cfd143b-5b2e-4996-aad3-1555122bb091",
-      "name": "Drone Pre-Flight Checklist",
-      "url": "https://droneplanet.vercel.app/",
+      "name": "Drone PreFlight Pro",
+      "url": "https://pilot.droneplanet.us/",
       "description": "Before you fly your drone, stay compliant and fill out the short checklist, photograph your drone and save the pdf before every flight.",
       "className": "px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 border border-blue-400/50 flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95",
       "iconName": "clipboard-check",
